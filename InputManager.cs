@@ -1,7 +1,7 @@
 using System;
 using Godot;
 
-public static class InputData
+public static class InputManager
 {
     public static bool Active = true;
 
@@ -17,30 +17,33 @@ public static class InputData
         GamePadButton,
         Other
     }
-    public static InputType inputType;
-    public static InputEvent inputEvent;
-    public static InputEventKey inputEventKey;
-    public static InputEventMouseButton inputEventMouseButton;
-    public static InputEventMouseMotion inputEventMouseMotion;
-    public static InputEventJoypadMotion inputEventJoypadMotion;
-    public static InputEventJoypadButton inputEventJoypadButton;
-    public static InputEventScreenDrag inputEventScreenDrag;
-    public static InputEventScreenTouch inputEventScreenTouch;
-    public static bool isPressed;
-    public static bool isEcho = false;
-    public static Key keyCode;
-    public static Vector2 relative = Vector2.Zero;
-    public static MouseButton mouseButton;
-    public static JoyAxis joyAxis;
-    public static float joyAxisValue;
-    public static JoyButton joyButton;
-    public static Vector2 LeftJoystickVector = Vector2.Zero;
-    public static Vector2 RightJoystick = Vector2.Zero;
-    public static float LeftTrigger = 0f;
-    public static float RightTrigger = 0f;
+    public static InputType inputType { get; private set; }
+    public static InputEvent inputEvent { get; private set; }
+    public static InputEventKey inputEventKey { get; private set; }
+    public static InputEventMouseButton inputEventMouseButton { get; private set; }
+    public static InputEventMouseMotion inputEventMouseMotion { get; private set; }
+    public static InputEventJoypadMotion inputEventJoypadMotion { get; private set; }
+    public static InputEventJoypadButton inputEventJoypadButton { get; private set; }
+    public static InputEventScreenDrag inputEventScreenDrag { get; private set; }
+    public static InputEventScreenTouch inputEventScreenTouch { get; private set; }
+    public static bool isPressed { get; private set; }
+    public static bool isEcho { get; private set; } = false;
+    public static Key keyCode { get; private set; }
+    public static Vector2 relative { get; private set; } = Vector2.Zero;
+    public static MouseButton mouseButton { get; private set; }
+    public static JoyAxis joyAxis { get; private set; }
+    public static float joyAxisValue { get; private set; }
+    public static JoyButton joyButton { get; private set; }
+    public static Vector2 LeftJoystickVector => _LeftJoystickVector;
+    private static Vector2 _LeftJoystickVector = Vector2.Zero;
+    public static Vector2 RightJoystick => _RightJoystick;
+    private static Vector2 _RightJoystick = Vector2.Zero;
+    public static float LeftTrigger { get; private set; } = 0f;
+    public static float RightTrigger { get; private set; } = 0f;
 
-    public static KeyModifierMask modifierMask = KeyModifierMask.CodeMask;
-    public static Action
+    public static KeyModifierMask modifierMask => _modifierMask;
+    private static KeyModifierMask _modifierMask = KeyModifierMask.CodeMask;
+    public static event Action
     onKey,
     onMouseMotion,
     onMouseButton,
@@ -49,7 +52,7 @@ public static class InputData
     onScreenDrag,
     onScreenTouch;
 
-    public static void SetInputs(in InputEvent input)
+    public static void SetInputs(InputEvent input)
     {
         if (!Active) return;
 
@@ -59,10 +62,10 @@ public static class InputData
         {
             inputEventKey = (InputEventKey)input;
             inputType = InputType.Key;
-            keyCode = inputEventKey.GetPhysicalKeycodeWithModifiers();
+            keyCode = inputEventKey.PhysicalKeycode;
             isPressed = input.IsPressed();
             isEcho = input.IsEcho();
-            modifierMask = inputEventKey.GetModifiersMask();
+            _modifierMask = inputEventKey.GetModifiersMask();
             onKey?.Invoke();
         }
         else if (input_type == typeof(InputEventMouseMotion))
@@ -70,7 +73,7 @@ public static class InputData
             inputType = InputType.MouseMotion;
             inputEventMouseMotion = (InputEventMouseMotion)input;
             relative = inputEventMouseMotion.Relative;
-            modifierMask = inputEventMouseMotion.GetModifiersMask();
+            _modifierMask = inputEventMouseMotion.GetModifiersMask();
             onMouseMotion?.Invoke();
         }
         else if (input_type == typeof(InputEventMouseButton))
@@ -79,7 +82,7 @@ public static class InputData
             inputEventMouseButton = (InputEventMouseButton)input;
             mouseButton = inputEventMouseButton.ButtonIndex;
             isPressed = input.IsPressed();
-            modifierMask = inputEventMouseButton.GetModifiersMask();
+            _modifierMask = inputEventMouseButton.GetModifiersMask();
             onMouseButton?.Invoke();
         }
         else if (input_type == typeof(InputEventJoypadMotion))
@@ -90,19 +93,19 @@ public static class InputData
             switch (joyAxis)
             {
                 case JoyAxis.LeftX:
-                    LeftJoystickVector.X = joyAxisValue;
+                    _LeftJoystickVector.X = joyAxisValue;
                     inputType = InputType.LeftJoytickMotion;
                     break;
                 case JoyAxis.LeftY:
-                    LeftJoystickVector.Y = joyAxisValue;
+                    _LeftJoystickVector.Y = joyAxisValue;
                     inputType = InputType.LeftJoytickMotion;
                     break;
                 case JoyAxis.RightX:
-                    RightJoystick.X = joyAxisValue;
+                    _RightJoystick.X = joyAxisValue;
                     inputType = InputType.RightJoytickMotion;
                     break;
                 case JoyAxis.RightY:
-                    RightJoystick.Y = joyAxisValue;
+                    _RightJoystick.Y = joyAxisValue;
                     inputType = InputType.RightJoytickMotion;
                     break;
                 case JoyAxis.TriggerLeft:
@@ -137,7 +140,7 @@ public static class InputData
             isPressed = input.IsPressed();
             onScreenTouch?.Invoke();
         }
-        else if (input_type == typeof(InputEvent))
+        else if (input_type == typeof(InputEventScreenTouch))
         {
             inputEventScreenTouch = (InputEventScreenTouch)input;
             isPressed = input.IsPressed();
