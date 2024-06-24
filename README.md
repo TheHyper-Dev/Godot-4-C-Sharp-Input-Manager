@@ -1,6 +1,7 @@
 # Godot 4 C# Input Manager
 Improves the input handling by basing it on C# events
 
+DO NOT USE THIS CLASS DURING PROCESS OR PHYSICSPROCESS, IT WILL MOST LIKELY GIVE FALSE RESULTS due to possibly having multiple inputs being recieved in a single (physics)process call.
 
 How To Use:
 
